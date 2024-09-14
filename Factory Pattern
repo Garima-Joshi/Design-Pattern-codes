@@ -1,0 +1,235 @@
+// Burger Interface
+interface Burger {
+    void prepareBurger();
+}
+
+// VeggieBurger Class
+class VeggieBurger implements Burger {
+    private List<String> veggies;
+    private boolean isCombo;
+
+    public VeggieBurger(List<String> veggies, boolean isCombo) {
+        this.veggies = veggies;
+        this.isCombo = isCombo;
+    }
+
+    @Override
+    public void prepareBurger() {
+        System.out.println("Preparing Veggie Burger with " + String.join(", ", veggies));
+        if (isCombo) {
+            System.out.println("This Veggie Burger is part of a combo meal.");
+        }
+    }
+}
+
+// BeefBurger Class
+class BeefBurger implements Burger {
+    private boolean isImported;
+    private String countryOfImport;
+
+    public BeefBurger(boolean isImported, String countryOfImport) {
+        this.isImported = isImported;
+        this.countryOfImport = countryOfImport;
+    }
+
+    @Override
+    public void prepareBurger() {
+        System.out.println("Preparing Beef Burger");
+        if (isImported) {
+            System.out.println("This Beef Burger is made with imported beef from " + countryOfImport);
+        }
+    }
+}
+
+// Bill Interface
+interface Bill {
+    void generateBill();
+}
+
+// VeggieBurgerBill Class
+class VeggieBurgerBill implements Bill {
+    private static final Map<String, Double> ADD_ON_PRICES;
+    private List<String> addOns;
+    private double gst;
+
+    static {
+        ADD_ON_PRICES = new HashMap<>();
+        ADD_ON_PRICES.put("Extra Cheese", 20.0);
+        ADD_ON_PRICES.put("Avocado", 15.0);
+        ADD_ON_PRICES.put("Pickles", 5.0);
+    }
+
+    public VeggieBurgerBill(List<String> addOns, double gst) {
+        this.addOns = addOns;
+        this.gst = gst;
+    }
+
+    @Override
+    public void generateBill() {
+        double totalPrice = 0;
+        System.out.println("Generating bill for Veggie Burger with the following add-ons:");
+        for (String addOn : addOns) {
+            if (ADD_ON_PRICES.containsKey(addOn)) {
+                System.out.println(addOn + ": " + ADD_ON_PRICES.get(addOn));
+                totalPrice += ADD_ON_PRICES.get(addOn);
+            } else {
+                System.out.println(addOn + ": Price not available");
+            }
+        }
+        double totalWithGST = totalPrice + (totalPrice * gst / 100);
+        System.out.println("Total price with GST (" + gst + "%): " + totalWithGST);
+    }
+}
+
+// BeefBurgerBill Class
+class BeefBurgerBill implements Bill {
+    private double basePrice;
+    private boolean isImported;
+    private String countryOfImport;
+    private double gst;
+
+    public BeefBurgerBill(double basePrice, boolean isImported, String countryOfImport, double gst) {
+        this.basePrice = basePrice;
+        this.isImported = isImported;
+        this.countryOfImport = countryOfImport;
+        this.gst = gst;
+    }
+
+    @Override
+    public void generateBill() {
+        double totalPrice = basePrice;
+        if (isImported) {
+            totalPrice += 30;  // Adding a premium for imported beef
+            System.out.println("Additional charge for imported beef from " + countryOfImport + ": 30.0");
+        }
+        
+        double totalWithGST = totalPrice + (totalPrice * gst / 100);
+        System.out.println("Total price with GST (" + gst + "%): " + totalWithGST);
+    }
+}
+
+// Abstract Restaurant Factory
+abstract class Restaurant {
+    public void orderBurger(Object... attributes) {
+        Burger burger = createBurger(attributes);
+        burger.prepareBurger();
+    }
+
+    public void billing(Object... attributes) {
+        Bill bill = createBill(attributes);
+        bill.generateBill();
+    }
+
+    // Factory methods
+    public abstract Burger createBurger(Object... attributes);
+    public abstract Bill createBill(Object... attributes);
+}
+
+// VeggieBurgerFactory Class
+class VeggieBurgerFactory extends Restaurant {
+    @Override
+    public Burger createBurger(Object... attributes) {
+        // First argument: List of veggies, Second argument: boolean isCombo
+        List<String> veggies = (List<String>) attributes[0];
+        boolean isCombo = (Boolean) attributes[1];
+        return new VeggieBurger(veggies, isCombo);
+    }
+
+    @Override
+    public Bill createBill(Object... attributes) {
+        // First argument: List of add-ons, Second argument: GST
+        List<String> addOns = (List<String>) attributes[0];
+        double gst = (Double) attributes[1];
+        return new VeggieBurgerBill(addOns, gst);
+    }
+}
+
+// BeefBurgerFactory Class
+class BeefBurgerFactory extends Restaurant {
+    @Override
+    public Burger createBurger(Object... attributes) {
+        // First argument: boolean imported, Second argument: country of import
+        boolean imported = (Boolean) attributes[0];
+        String countryOfImport = (String) attributes[1];
+        return new BeefBurger(imported, countryOfImport);
+    }
+
+    @Override
+    public Bill createBill(Object... attributes) {
+        // First argument: base price, Second argument: imported status, Third argument: country of import, Fourth: GST
+        double basePrice = (Double) attributes[0];
+        boolean isImported = (Boolean) attributes[1];
+        String countryOfImport = (String) attributes[2];
+        double gst = (Double) attributes[3];
+
+        return new BeefBurgerBill(basePrice, isImported, countryOfImport, gst);
+    }
+}
+
+import org.json.JSONObject;
+import java.util.*;
+
+// Main Class to Handle JSON Input
+public class Main {
+    public static void main(String[] args) {
+        // Example JSON strings for Veggie and Beef Burgers
+        String veggieBurgerJson = "{ 'burger':'veggies', 'add-ons':['Extra Cheese', 'Avocado', 'Pickles'], 'veggies':['Lettuce', 'Tomato', 'Cucumber'], 'isCombo':true }";
+        String beefBurgerJson = "{ 'burger':'beef', 'isimported':true, 'country':'Korea', 'basePrice':100 }";
+
+        // Process the JSON for Veggie Burger
+        handleOrder(veggieBurgerJson);
+
+        System.out.println("----------------");
+
+        // Process the JSON for Beef Burger
+        handleOrder(beefBurgerJson);
+    }
+
+    // Function to handle different JSON inputs for orders
+    public static void handleOrder(String jsonInput) {
+        // Convert string input to JSON object
+        JSONObject json = new JSONObject(jsonInput);
+
+        // Determine which type of burger to create based on 'burger' key
+        String burgerType = json.getString("burger");
+
+        // Initialize Restaurant factory
+        Restaurant restaurant = null;
+
+        switch (burgerType.toLowerCase()) {
+            case "veggies":
+                restaurant = new VeggieBurgerFactory();
+
+                // Extract veggie-specific attributes from JSON
+                List<String> veggies = json.has("veggies") ? Arrays.asList(json.getJSONArray("veggies").toString().split(", ")) : new ArrayList<>();
+                boolean isCombo = json.has("isCombo") && json.getBoolean("isCombo");
+
+                // Extract add-ons for billing
+                List<String> addOns = json.has("add-ons") ? Arrays.asList(json.getJSONArray("add-ons").toString().split(", ")) : new ArrayList<>();
+
+                // Order Veggie Burger and generate the bill
+                restaurant.orderBurger(veggies, isCombo);
+                restaurant.billing(addOns, 5.0);  // Assuming 5% GST for example
+                break;
+
+            case "beef":
+                restaurant = new BeefBurgerFactory();
+
+                // Extract beef-specific attributes from JSON
+                boolean isImported = json.has("isimported") && json.getBoolean("isimported");
+                String country = json.has("country") ? json.getString("country") : "Unknown";
+                double basePrice = json.has("basePrice") ? json.getDouble("basePrice") : 100.0;  // Default price
+
+                // Order Beef Burger
+                restaurant.orderBurger(isImported, country);
+
+                // Generate bill for Beef Burger
+                restaurant.billing(basePrice, isImported, country, 10.0);  // Assuming 10% GST
+                break;
+
+            default:
+                System.out.println("Invalid burger type specified.");
+                break;
+        }
+    }
+}
