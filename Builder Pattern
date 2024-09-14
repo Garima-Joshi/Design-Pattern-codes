@@ -11,165 +11,225 @@ public interface ICustomerBuilder {
 
 
 
-public class Customer {
-    protected String firstName;
-    protected String lastName;
-    protected String middleName;
-    protected String primaryEmail;
-    protected String secondaryEmail;
-    protected String primaryMobileNumber;
-    protected String secondaryMobileNumber;
+public interface Customer {
+    String getFirstName();
+    String getLastName();
+    String getPrimaryEmail();
+    String getPrimaryMobileNumber();
 
-    // Constructor is protected to prevent direct instantiation
-    protected Customer() {}
+    // Optionally, you can add more common methods that all customer types should implement
+    String getDescription();  // To describe the customer type
+}
+
+
+
+public class SavingAccountCustomer implements Customer {
+    private final String firstName;
+    private final String lastName;
+    private String primaryEmail;
+    private String primaryMobileNumber;
+
+    // Protected constructor
+    protected SavingAccountCustomer(String firstName, String lastName, String primaryEmail, String primaryMobileNumber) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.primaryEmail = primaryEmail;
+        this.primaryMobileNumber = primaryMobileNumber;
+    }
+
+    // Getters for immutable fields
+    @Override
+    public String getFirstName() {
+        return firstName;
+    }
+
+    @Override
+    public String getLastName() {
+        return lastName;
+    }
+
+    @Override
+    public String getPrimaryEmail() {
+        return primaryEmail;
+    }
+
+    @Override
+    public String getPrimaryMobileNumber() {
+        return primaryMobileNumber;
+    }
+
+    // Setters for mutable fields
+    public void setPrimaryEmail(String primaryEmail) {
+        this.primaryEmail = primaryEmail;
+    }
+
+    public void setPrimaryMobileNumber(String primaryMobileNumber) {
+        this.primaryMobileNumber = primaryMobileNumber;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Saving Account Customer";
+    }
 
     @Override
     public String toString() {
-        return "Customer [firstName=" + firstName + ", lastName=" + lastName + 
-               ", primaryEmail=" + primaryEmail + ", primaryMobileNumber=" + 
-               primaryMobileNumber + "]";
+        return "SavingAccountCustomer [firstName=" + firstName + ", lastName=" + lastName + 
+               ", primaryEmail=" + primaryEmail + ", primaryMobileNumber=" + primaryMobileNumber + "]";
     }
 }
 
+public class CreditCardCustomer implements Customer {
+    private final String firstName;
+    private final String lastName;
+    private String primaryEmail;
+    private String primaryMobileNumber;
+    private int limit;  // Specific to Credit Card Customer
 
-
-public class SavingAccountCustomer extends Customer {
-    public SavingAccountCustomer() {
-        // Can add specific fields for SavingAccountCustomer if needed.
-    }
-}
-public class CreditCardCustomer extends Customer {
-    private int limit;
-
-    public CreditCardCustomer(int limit) {
+    // Protected constructor
+    protected CreditCardCustomer(String firstName, String lastName, String primaryEmail, String primaryMobileNumber, int limit) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.primaryEmail = primaryEmail;
+        this.primaryMobileNumber = primaryMobileNumber;
         this.limit = limit;
+    }
+
+    // Getters for immutable fields
+    @Override
+    public String getFirstName() {
+        return firstName;
+    }
+
+    @Override
+    public String getLastName() {
+        return lastName;
+    }
+
+    @Override
+    public String getPrimaryEmail() {
+        return primaryEmail;
+    }
+
+    @Override
+    public String getPrimaryMobileNumber() {
+        return primaryMobileNumber;
     }
 
     public int getLimit() {
         return limit;
     }
 
+    // Setters for mutable fields
+    public void setPrimaryEmail(String primaryEmail) {
+        this.primaryEmail = primaryEmail;
+    }
+
+    public void setPrimaryMobileNumber(String primaryMobileNumber) {
+        this.primaryMobileNumber = primaryMobileNumber;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Credit Card Customer with limit: " + limit;
+    }
+
     @Override
     public String toString() {
-        return "CreditCardCustomer [limit=" + limit + ", firstName=" + firstName + 
-               ", lastName=" + lastName + ", primaryEmail=" + primaryEmail + 
-               ", primaryMobileNumber=" + primaryMobileNumber + "]";
+        return "CreditCardCustomer [firstName=" + firstName + ", lastName=" + lastName + 
+               ", primaryEmail=" + primaryEmail + ", primaryMobileNumber=" + primaryMobileNumber + 
+               ", limit=" + limit + "]";
     }
 }
+
 
 
 
 public class SavingAccountCustomerBuilder implements ICustomerBuilder {
-    private SavingAccountCustomer customer;
-
-    public SavingAccountCustomerBuilder() {
-        this.customer = new SavingAccountCustomer();
-    }
+    private String firstName;
+    private String lastName;
+    private String primaryEmail;
+    private String primaryMobileNumber;
 
     @Override
     public ICustomerBuilder firstName(String firstName) {
-        customer.firstName = firstName;
+        this.firstName = firstName;
         return this;
     }
 
     @Override
     public ICustomerBuilder lastName(String lastName) {
-        customer.lastName = lastName;
-        return this;
-    }
-
-    @Override
-    public ICustomerBuilder middleName(String middleName) {
-        customer.middleName = middleName;
+        this.lastName = lastName;
         return this;
     }
 
     @Override
     public ICustomerBuilder primaryEmail(String primaryEmail) {
-        customer.primaryEmail = primaryEmail;
-        return this;
-    }
-
-    @Override
-    public ICustomerBuilder secondaryEmail(String secondaryEmail) {
-        customer.secondaryEmail = secondaryEmail;
+        this.primaryEmail = primaryEmail;
         return this;
     }
 
     @Override
     public ICustomerBuilder primaryMobileNumber(String primaryMobileNumber) {
-        customer.primaryMobileNumber = primaryMobileNumber;
-        return this;
-    }
-
-    @Override
-    public ICustomerBuilder secondaryMobileNumber(String secondaryMobileNumber) {
-        customer.secondaryMobileNumber = secondaryMobileNumber;
+        this.primaryMobileNumber = primaryMobileNumber;
         return this;
     }
 
     @Override
     public Customer build() {
-        return customer;
+        return new SavingAccountCustomer(firstName, lastName, primaryEmail, primaryMobileNumber);
     }
 }
+
 
 
 
 public class CreditCardCustomerBuilder implements ICustomerBuilder {
-    private CreditCardCustomer customer;
+    private String firstName;
+    private String lastName;
+    private String primaryEmail;
+    private String primaryMobileNumber;
+    private int limit;  // Specific to Credit Card Customer
 
-    public CreditCardCustomerBuilder(int limit) {
-        this.customer = new CreditCardCustomer(limit);  // Specific to credit card customers
+    public CreditCardCustomerBuilder setLimit(int limit) {
+        this.limit = limit;
+        return this;
     }
 
     @Override
     public ICustomerBuilder firstName(String firstName) {
-        customer.firstName = firstName;
+        this.firstName = firstName;
         return this;
     }
 
     @Override
     public ICustomerBuilder lastName(String lastName) {
-        customer.lastName = lastName;
-        return this;
-    }
-
-    @Override
-    public ICustomerBuilder middleName(String middleName) {
-        customer.middleName = middleName;
+        this.lastName = lastName;
         return this;
     }
 
     @Override
     public ICustomerBuilder primaryEmail(String primaryEmail) {
-        customer.primaryEmail = primaryEmail;
-        return this;
-    }
-
-    @Override
-    public ICustomerBuilder secondaryEmail(String secondaryEmail) {
-        customer.secondaryEmail = secondaryEmail;
+        this.primaryEmail = primaryEmail;
         return this;
     }
 
     @Override
     public ICustomerBuilder primaryMobileNumber(String primaryMobileNumber) {
-        customer.primaryMobileNumber = primaryMobileNumber;
-        return this;
-    }
-
-    @Override
-    public ICustomerBuilder secondaryMobileNumber(String secondaryMobileNumber) {
-        customer.secondaryMobileNumber = secondaryMobileNumber;
+        this.primaryMobileNumber = primaryMobileNumber;
         return this;
     }
 
     @Override
     public Customer build() {
-        return customer;
+        return new CreditCardCustomer(firstName, lastName, primaryEmail, primaryMobileNumber, limit);
     }
 }
+
 
 
 public class Main {
@@ -182,16 +242,19 @@ public class Main {
                                             .primaryEmail("john.doe@example.com")
                                             .primaryMobileNumber("123-456-7890")
                                             .build();
+        System.out.println(savingAccountCustomer.getDescription());
         System.out.println(savingAccountCustomer);
 
         // Build a CreditCardCustomer with a credit limit
-        ICustomerBuilder creditCardBuilder = new CreditCardCustomerBuilder(5000);  // Pass credit limit
+        CreditCardCustomerBuilder creditCardBuilder = new CreditCardCustomerBuilder();
         Customer creditCardCustomer = creditCardBuilder
                                         .firstName("Jane")
                                         .lastName("Smith")
                                         .primaryEmail("jane.smith@example.com")
                                         .primaryMobileNumber("987-654-3210")
+                                        .setLimit(5000)  // Set credit limit
                                         .build();
+        System.out.println(creditCardCustomer.getDescription());
         System.out.println(creditCardCustomer);
     }
 }
